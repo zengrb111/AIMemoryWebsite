@@ -1,0 +1,22 @@
+[Unit]
+Description=AIMemory Healing Station API (心灵驿站内容服务)
+Documentation=https://aimemory.cafe/healing.html
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/aimemory-services/healing
+EnvironmentFile=-/opt/aimemory-services/healing/.env
+ExecStart=/opt/aimemory-services/venv/bin/uvicorn app:app --host 127.0.0.1 --port 3010 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=always
+RestartSec=3
+StandardOutput=append:/opt/aimemory-services/logs/healing.log
+StandardError=append:/opt/aimemory-services/logs/healing.err
+# 资源约束：不能挤占主站 NestJS 服务
+CPUQuota=35%
+MemoryMax=384M
+MemorySwapMax=512M
+
+[Install]
+WantedBy=multi-user.target

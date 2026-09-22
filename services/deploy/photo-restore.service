@@ -1,0 +1,24 @@
+[Unit]
+Description=AIMemory Photo Restore API (贴心工具·老照片修复)
+Documentation=https://aimemory.cafe/tools.html
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/aimemory-services/restore
+Environment="RESTORE_MODEL_DIR=/opt/aimemory-services/restore/models"
+Environment="ORT_THREADS=2"
+Environment="OMP_NUM_THREADS=2"
+ExecStart=/opt/aimemory-services/venv/bin/uvicorn app:app --host 127.0.0.1 --port 3020 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=always
+RestartSec=5
+StandardOutput=append:/opt/aimemory-services/logs/restore.log
+StandardError=append:/opt/aimemory-services/logs/restore.err
+# 推理是 CPU 密集型的，必须限流，否则会拖慢主站
+CPUQuota=150%
+MemoryMax=2200M
+MemorySwapMax=3G
+
+[Install]
+WantedBy=multi-user.target

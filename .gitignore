@@ -3,3 +3,6 @@ deploy/*.zip
 __pycache__/
 *.pyc
 .DS_Store
+services/photo-restore/out/
+services/**/__pycache__/
+*.jpg.out

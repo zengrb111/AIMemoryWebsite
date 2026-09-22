@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>心灵驿站 · 治愈系图文每日更新 | AI回忆录（AIMemory）</title>
+  <meta name="description" content="心灵驿站是 AI回忆录官网的治愈内容频道：每天一点温柔，关于亲情、思念、陪伴与告别。支持内容平台通过 API 接口每日自动更新。" />
+  <meta name="keywords" content="心灵驿站,治愈图文,亲情故事,思念,陪伴,AI回忆录,AIMemory,内容API" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">
+        <span class="logo">回</span>
+        <span>AI回忆录<small>AIMEMORY</small></span>
+      </a>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html">首页</a>
+        <a href="product.html">产品</a>
+        <a href="apps.html">相关应用</a>
+        <a href="healing.html" class="active">心灵驿站</a>
+        <a href="tools.html">贴心工具</a>
+        <a href="contact.html">联系我们</a>
+        <a href="https://app.aimemory.cafe" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm nav-cta">免费开始</a>
+      </nav>
+      <button class="nav-toggle" aria-label="菜单">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 频道头 -->
+  <section class="channel-hero">
+    <div class="container">
+      <span class="eyebrow">🍃 治愈内容频道</span>
+      <h1>心灵驿站</h1>
+      <p class="lead">关于父母、关于思念、关于那些没说出口的话。<br />每天一点温柔，陪你走过想念的时刻。</p>
+      <div class="meta-strip">
+        <div><div class="v" id="statTotal">—</div><div class="k">篇温暖图文</div></div>
+        <div><div class="v" id="statUpdate">—</div><div class="k">最近更新</div></div>
+        <div><div class="v">每日</div><div class="k">自动更新</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 列表 -->
+  <section class="block" style="padding-top:44px;">
+    <div class="container">
+      <div class="healing-toolbar">
+        <div class="chips" id="chips">
+          <button class="chip active" data-cat="全部">全部</button>
+        </div>
+        <label class="healing-search">
+          <span class="faint">🔍</span>
+          <input type="search" id="searchInput" placeholder="搜索标题或内容…" />
+        </label>
+      </div>
+
+      <div id="featureSlot"></div>
+      <div class="healing-grid" id="grid"></div>
+
+      <div class="healing-loading" id="loading">
+        <div class="spinner"></div>
+        正在从内容接口载入…
+      </div>
+      <div class="healing-empty" id="empty" style="display:none;"></div>
+      <div class="healing-more" id="moreWrap" style="display:none;">
+        <button class="btn btn-ghost" id="moreBtn">加载更多</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 内容平台接入说明 -->
+  <section class="block" style="background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+    <div class="container">
+      <div class="section-head">
+        <span class="tag">开放接口</span>
+        <h2>内容平台可每日自动更新本站内容</h2>
+        <p>心灵驿站对外提供标准 HTTP 接口。公众号、小红书、内容中台、自建 CMS 都可以按天推送图文，站点自动刷新，无需人工维护。</p>
+      </div>
+
+      <div class="grid grid-2" style="align-items:start;">
+        <div class="api-box">
+          <h3>读取接口（公开）</h3>
+          <p>无需鉴权，可直接被前端 / CDN / 第三方聚合调用。</p>
+          <div style="margin-top:16px;">
+            <div class="api-row"><span class="verb get">GET</span><span class="path">/api/healing/posts</span><span class="desc">图文列表（分页/分类/搜索）</span></div>
+            <div class="api-row"><span class="verb get">GET</span><span class="path">/api/healing/posts/{id}</span><span class="desc">单篇详情</span></div>
+            <div class="api-row"><span class="verb get">GET</span><span class="path">/api/healing/meta</span><span class="desc">频道元信息与分类</span></div>
+            <div class="api-row"><span class="verb get">GET</span><span class="path">/api/healing/feed.json</span><span class="desc">全量快照（便于缓存）</span></div>
+          </div>
+          <pre>curl https://aimemory.cafe/api/healing/posts?limit=10</pre>
+        </div>
+
+        <div class="api-box">
+          <h3>写入接口（需令牌）</h3>
+          <p>内容平台每日调用 <code>/sync</code> 推送当日图文，幂等去重，不会重复插入。</p>
+          <div style="margin-top:16px;">
+            <div class="api-row"><span class="verb post">POST</span><span class="path">/api/healing/sync</span><span class="desc">批量同步（每日调用）</span></div>
+            <div class="api-row"><span class="verb post">POST</span><span class="path">/api/healing/posts</span><span class="desc">单篇新增 / 更新</span></div>
+            <div class="api-row"><span class="verb post">POST</span><span class="path">/api/healing/upload</span><span class="desc">上传配图并获取 URL</span></div>
+            <div class="api-row"><span class="verb get">GET</span><span class="path">/api/healing/docs</span><span class="desc">交互式接口文档</span></div>
+          </div>
+          <pre>curl -X POST https://aimemory.cafe/api/healing/sync \
+  -H "Authorization: Bearer &lt;TOKEN&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"source":"我的内容中台","posts":[
+    {"title":"今天的标题","summary":"摘要",
+     "content":"正文…","category":"疗愈短文"}
+  ]}'</pre>
+        </div>
+      </div>
+
+      <p class="center muted" style="margin-top:26px;font-size:14px;">
+        需要接入令牌或对接文档？请通过 <a href="contact.html" style="color:var(--gold);font-weight:600;">联系我们</a> 获取。
+      </p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="block">
+    <div class="container">
+      <div class="cta">
+        <h2>把这份温柔，也留给你的家人</h2>
+        <p>读别人的故事，不如开始记录自己的。AI回忆录用 AI 帮你把父母的一生，整理成一本可以传世的书。</p>
+        <a href="https://app.aimemory.cafe" target="_blank" rel="noopener noreferrer" class="btn btn-primary">免费开始 →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 详情弹层 -->
+  <div class="modal-mask" id="modal">
+    <div class="modal-box" id="modalBox"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-top">
+      <div>
+        <div class="brand"><span class="logo">回</span><span>AI回忆录<small>AIMEMORY</small></span></div>
+        <p class="footer-about">AI回忆录（AIMemory）是山西金润瀚宇科技有限公司旗下的家庭记忆产品，用 AI 帮助每个家庭留住父母的故事，让爱有迹可循、让记忆得以传承。</p>
+      </div>
+      <div class="footer-col">
+        <h4>产品</h4>
+        <a href="product.html">产品介绍</a>
+        <a href="apps.html">相关应用</a>
+        <a href="healing.html">心灵驿站</a>
+        <a href="tools.html">贴心工具</a>
+        <a href="https://app.aimemory.cafe" target="_blank" rel="noopener noreferrer">免费开始</a>
+      </div>
+      <div class="footer-col">
+        <h4>服务与条款</h4>
+        <a href="agreement.html">用户协议</a>
+        <a href="privacy.html">隐私政策</a>
+        <a href="contact.html">联系我们</a>
+        <a href="/api/healing/docs" target="_blank" rel="noopener noreferrer">内容开放接口</a>
+      </div>
+      <div class="footer-col">
+        <h4>联系我们</h4>
+        <div class="footer-contact">
+          <div><span class="k">邮箱</span>sale@aimemory.cafe</div>
+          <div><span class="k">电话</span>13321118307</div>
+          <div><span class="k">微信</span>13321118307</div>
+          <div><span class="k">主体</span>山西金润瀚宇科技有限公司</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <div>© 2026 山西金润瀚宇科技有限公司（AIMemory）. 保留所有权利。</div>
+        <div class="beian">
+          <span><a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer">京ICP备2026024457号-2</a></span>
+          <a href="agreement.html">用户协议</a>
+          <a href="privacy.html">隐私政策</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="to-top" aria-label="返回顶部">↑</div>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/healing.js"></script>
+</body>
+</html>

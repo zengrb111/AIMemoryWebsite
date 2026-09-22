@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>贴心工具 · 老照片修复（AI 本地推理）| AI回忆录（AIMemory）</title>
+  <meta name="description" content="贴心工具是 AI回忆录官网的实用工具频道。老照片修复工具采用端侧小模型本地推理：AI 人脸修复 + 4 倍超分 + 自动校色，免费在线修复模糊、泛黄、褪色的老照片。" />
+  <meta name="keywords" content="老照片修复,老照片修复在线,AI照片修复,照片超分,模糊照片变清晰,人脸修复,AI回忆录,AIMemory" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html">
+        <span class="logo">回</span>
+        <span>AI回忆录<small>AIMEMORY</small></span>
+      </a>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html">首页</a>
+        <a href="product.html">产品</a>
+        <a href="apps.html">相关应用</a>
+        <a href="healing.html">心灵驿站</a>
+        <a href="tools.html" class="active">贴心工具</a>
+        <a href="contact.html">联系我们</a>
+        <a href="https://app.aimemory.cafe" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm nav-cta">免费开始</a>
+      </nav>
+      <button class="nav-toggle" aria-label="菜单">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="channel-hero">
+    <div class="container">
+      <span class="eyebrow">🧰 贴心工具频道</span>
+      <h1>老照片修复</h1>
+      <p class="lead">模糊、泛黄、褪色、有噪点的老照片，交给我们。<br />AI 人脸修复 + 4 倍超分 + 自动校色，一键还原记忆里清晰的样子。</p>
+      <div class="meta-strip">
+        <div><div class="v">4×</div><div class="k">超分放大</div></div>
+        <div><div class="v">AI</div><div class="k">人脸盲修复</div></div>
+        <div><div class="v">免费</div><div class="k">在线使用</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" style="padding-top:44px;">
+    <div class="container">
+      <div class="tool-layout">
+
+        <!-- 左：上传 / 对比 -->
+        <div>
+          <div class="tool-card" id="uploadCard">
+            <h3>1. 上传老照片</h3>
+            <p class="hint">支持 JPG / PNG / WEBP，单张不超过 15MB。建议先用原图，不要自己压缩。</p>
+
+            <label class="dropzone" id="dropzone" for="fileInput">
+              <div class="dz-ic">🖼️</div>
+              <b>点击选择照片，或拖到这里</b>
+              <span>照片仅用于本次修复，任务完成后 2 小时内自动删除</span>
+              <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" />
+            </label>
+
+            <div id="previewWrap" style="display:none;margin-top:22px;">
+              <div class="compare" id="compareStatic">
+                <img id="srcImg" alt="原图预览" />
+                <span class="lab l">原图</span>
+              </div>
+              <div class="result-meta">
+                <div>尺寸 <b id="srcSize">—</b></div>
+                <div>大小 <b id="srcBytes">—</b></div>
+                <div style="margin-left:auto;">
+                  <button class="btn btn-ghost btn-sm" id="resetBtn">重新选择</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tool-card" id="resultCard" style="display:none;margin-top:22px;">
+            <h3>修复结果</h3>
+            <p class="hint">拖动中间的滑块，对比修复前后。</p>
+            <div class="compare" id="compare">
+              <img id="beforeImg" alt="修复前" />
+              <div class="after-wrap" id="afterWrap">
+                <img id="afterImg" alt="修复后" />
+              </div>
+              <div class="handle" id="handle"></div>
+              <span class="lab l">修复前</span>
+              <span class="lab r">修复后</span>
+            </div>
+            <div class="result-meta" id="outMeta"></div>
+            <div class="tool-actions">
+              <a class="btn btn-primary" id="downloadBtn" download>下载修复后的照片 ↓</a>
+              <button class="btn btn-ghost" id="againBtn">再修一张</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：档位 / 进度 -->
+        <div>
+          <div class="tool-card">
+            <h3>2. 选择修复档位</h3>
+            <p class="hint">档位越高，细节重建越强，耗时也越长。</p>
+
+            <div class="mode-picker" id="modePicker">
+              <div class="mode-opt" data-mode="fast">
+                <span class="radio"></span>
+                <div><b>快速修复</b><small>超分降噪 + 自动校色，不修人脸</small></div>
+                <span class="eta">约 5–15 秒</span>
+              </div>
+              <div class="mode-opt sel" data-mode="standard">
+                <span class="radio"></span>
+                <div><b>标准修复 · 推荐</b><small>AI 人脸修复 + 超分降噪 + 校色</small></div>
+                <span class="eta">约 15–40 秒</span>
+              </div>
+              <div class="mode-opt" data-mode="strong">
+                <span class="radio"></span>
+                <div><b>精修模式</b><small>Real-ESRGAN 重建 + AI 人脸修复</small></div>
+                <span class="eta">约 40–120 秒</span>
+              </div>
+            </div>
+
+            <div class="tool-actions">
+              <button class="btn btn-primary" id="startBtn" disabled>开始修复</button>
+              <span class="faint" id="startHint" style="font-size:13px;align-self:center;">请先上传照片</span>
+            </div>
+
+            <div id="progressWrap" style="display:none;margin-top:20px;">
+              <div class="progress-bar"><i id="progressBar"></i></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span class="muted" id="stageText">排队中…</span>
+                <span class="gold" id="pctText">0%</span>
+              </div>
+              <ul class="tool-steps" id="stepList"></ul>
+            </div>
+
+            <p class="tool-note">
+              ⓘ 修复在服务端本地推理完成，不调用任何第三方云端 AI 接口，照片不会离开我们的服务器。
+              任务文件在完成 2 小时后自动清理。
+            </p>
+          </div>
+
+          <div class="tool-card" style="margin-top:22px;">
+            <h3>它做了什么</h3>
+            <p class="hint">四个端侧小模型串成一条修复管线。</p>
+            <div class="tool-cards" style="grid-template-columns:1fr;margin-top:14px;">
+              <div class="mini-card">
+                <div class="ic">🔍</div>
+                <h4>人脸检测 · SCRFD-2.5G</h4>
+                <p>自动找出照片里的每一张脸，连侧脸、小脸都不放过。</p>
+              </div>
+              <div class="mini-card">
+                <div class="ic">🙂</div>
+                <h4>人脸修复 · GPEN-BFR</h4>
+                <p>盲人脸修复模型，专治老照片里模糊、过曝、有噪点的面孔。</p>
+              </div>
+              <div class="mini-card">
+                <div class="ic">✨</div>
+                <h4>超分降噪 · SPAN ×4</h4>
+                <p>仅 549K 参数的轻量超分网络，把照片放大 4 倍并抹掉噪点。</p>
+              </div>
+              <div class="mini-card">
+                <div class="ic">🎨</div>
+                <h4>自动校色</h4>
+                <p>修正泛黄偏色、拉伸褪色的灰阶，找回过曝丢失的层次。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="block" style="background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+    <div class="container">
+      <div class="section-head">
+        <span class="tag">使用建议</span>
+        <h2>怎么修，效果最好</h2>
+      </div>
+      <div class="grid grid-3">
+        <div class="card"><div class="ic">📷</div><h3>用扫描件或翻拍原图</h3><p>分辨率越高，能还原的细节越多。翻拍时尽量正对、光线均匀，避免反光与阴影。</p></div>
+        <div class="card"><div class="ic">🚫</div><h3>别提前压缩或加滤镜</h3><p>微信转发、社交平台压缩会永久损失细节。请直接用相册原图上传。</p></div>
+        <div class="card"><div class="ic">🙂</div><h3>人像照片选标准或精修</h3><p>有清晰人脸的合影，标准档会逐张修复人脸；风景与物件照用快速档就够。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="cta">
+        <h2>修好的照片，值得配上一段故事</h2>
+        <p>AI回忆录可以把修复后的老照片和父母的口述一起，排成一本能翻阅、能分享、能传下去的图文回忆录。</p>
+        <a href="https://app.aimemory.cafe" target="_blank" rel="noopener noreferrer" class="btn btn-primary">去做一本回忆录 →</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-top">
+      <div>
+        <div class="brand"><span class="logo">回</span><span>AI回忆录<small>AIMEMORY</small></span></div>
+        <p class="footer-about">AI回忆录（AIMemory）是山西金润瀚宇科技有限公司旗下的家庭记忆产品，用 AI 帮助每个家庭留住父母的故事，让爱有迹可循、让记忆得以传承。</p>
+      </div>
+      <div class="footer-col">
+        <h4>产品</h4>
+        <a href="product.html">产品介绍</a>
+        <a href="apps.html">相关应用</a>
+        <a href="healing.html">心灵驿站</a>
+        <a href="tools.html">贴心工具</a>
+        <a href="https://app.aimemory.cafe" target="_blank" rel="noopener noreferrer">免费开始</a>
+      </div>
+      <div class="footer-col">
+        <h4>服务与条款</h4>
+        <a href="agreement.html">用户协议</a>
+        <a href="privacy.html">隐私政策</a>
+        <a href="contact.html">联系我们</a>
+        <a href="/api/tools/docs" target="_blank" rel="noopener noreferrer">修复接口文档</a>
+      </div>
+      <div class="footer-col">
+        <h4>联系我们</h4>
+        <div class="footer-contact">
+          <div><span class="k">邮箱</span>sale@aimemory.cafe</div>
+          <div><span class="k">电话</span>13321118307</div>
+          <div><span class="k">微信</span>13321118307</div>
+          <div><span class="k">主体</span>山西金润瀚宇科技有限公司</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <div>© 2026 山西金润瀚宇科技有限公司（AIMemory）. 保留所有权利。</div>
+        <div class="beian">
+          <span><a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer">京ICP备2026024457号-2</a></span>
+          <a href="agreement.html">用户协议</a>
+          <a href="privacy.html">隐私政策</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="to-top" aria-label="返回顶部">↑</div>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/photo-tool.js"></script>
+</body>
+</html>

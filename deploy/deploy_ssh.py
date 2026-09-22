@@ -24,8 +24,40 @@ if not PASS:
 LOCAL_ROOT = pathlib.Path(__file__).resolve().parent.parent  # D:/OPCProjects/AiMemoryWeb
 UPLOAD_ITEMS = [
     "index.html", "product.html", "apps.html",
+    "healing.html", "tools.html",
     "agreement.html", "privacy.html", "contact.html", "assets",
 ]
+
+# 扩展服务的反向代理片段（心灵驿站内容 API / 老照片修复 API）
+# 注意：location 必须带尾斜杠 + proxy_pass 带尾斜杠 => 正好剥掉 /api/xxx/ 前缀。
+#       若 location 不带尾斜杠会拼出 //health 双斜杠导致后端 404（2026-09-22 踩过）。
+API_LOCATIONS = """    # ---------- 扩展服务 ----------
+    # 心灵驿站内容 API（FastAPI, 127.0.0.1:3010）—— ^~ 优先于静态资源正则，
+    # 否则 /api/.../xxx.png 会被 \.(png)$ 正则拦截（nginx 先查正则再查前缀）
+    location ^~ /api/healing/ {
+        proxy_pass http://127.0.0.1:3010/;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+
+    # 贴心工具·老照片修复 API（FastAPI + ONNX, 127.0.0.1:3020）
+    location ^~ /api/tools/ {
+        proxy_pass http://127.0.0.1:3020/;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 20m;      # 允许上传老照片
+        proxy_read_timeout   300s;     # 精修档推理较慢
+        proxy_send_timeout   300s;
+        proxy_request_buffering off;   # 大文件直传，避免落盘两遍
+    }
+"""
 
 # 证书尚不存在时的纯 HTTP 配置（首次部署用）
 NGINX_CONF_HTTP = f"""server {{
@@ -36,6 +68,9 @@ NGINX_CONF_HTTP = f"""server {{
     root {REMOTE_ROOT};
     index index.html;
 
+    client_max_body_size 20m;
+
+{API_LOCATIONS}
     location / {{
         try_files $uri $uri/ /index.html;
     }}
@@ -84,11 +119,14 @@ server {{
     root {REMOTE_ROOT};
     index index.html;
 
+    client_max_body_size 20m;
+
     add_header Strict-Transport-Security "max-age=31536000" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
+{API_LOCATIONS}
     location / {{
         try_files $uri $uri/ =404;
     }}
